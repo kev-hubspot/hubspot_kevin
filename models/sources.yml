@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: backend_data
+    tables:
+      - name: accounts
+      - name: subscriptions
+      - name: object_counts_daily
+  - name: events_data
+    tables:
+      - name: usage_events
