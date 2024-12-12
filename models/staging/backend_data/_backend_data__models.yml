@@ -1,0 +1,77 @@
+version: 2
+
+models:
+  - name: stg_backend_data__subscriptions 
+    description: >
+      This model transforms and enriches raw subscription data collected from the backend.
+    columns:
+      - name: subscription_id
+        description: "Surrogate key based on account_id and product."
+
+      - name: account_id
+        description: "ID of the account that purchased the product. Can be joined with the `accounts` table."
+        tests:
+          - not_null
+
+      - name: product
+        description: "HubSpot product for which the subscription was purchased."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["Marketing Hub", "Sales Hub", "Service Hub", "CMS Hub", "Operations Hub"]
+
+      - name: tier
+        description: "The subscription tier for the product."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["Trial", "Starter", "Professional", "Enterprise"]
+
+      - name: start_date
+        description: "Date the subscription began."
+        tests:
+          - not_null
+
+      - name: start_month
+        description: ""
+
+      - name: cancel_date
+        description: "Date the subscription was canceled. The column is null if the subscription is still active."
+
+      - name: cancel_month
+        description: ""
+
+      - name: monthly_cost
+        description: Monthly Recurring Revenue for the subscription
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+      - name: annual_cost
+        description: "Annualized cost of the subscription"
+
+      - name: is_touchless_conversion
+        description: "Boolean indicator of whether the subscription was acquired without any sales rep involvement."
+
+      - name: is_active
+        description: "Boolean flag indicating whether the subscription is currently active (i.e., no cancel_date)."
+
+      - name: account_subscription_order
+        description: "The nth subscription purchased by an account"
+
+      - name: account_product_previous_tier
+        description: "Previous subscription tier for the same account and product"
+
+      - name: account_product_next_tier
+        description: "Next subscription tier for the same account and product"
+
+      - name: account_product_previous_monthly_cost
+        description: "Monthly cost of the previous subscription tier for the same account and product"
+        
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - subscription_id
+            - tier
+            - start_date
